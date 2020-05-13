@@ -67,9 +67,11 @@ func (o *OperationBootstrapAWSIoTThing) Perform(kc *Client) error {
 	}
 
 	reqBody := struct {
-		KeyID string `json:"keyId"`
+		KeyID             string `json:"keyId"`
+		RequestParameters string `json:"requestParameters,omitempty"`
 	}{
-		KeyID: ar.KeyID,
+		KeyID:             ar.KeyID,
+		RequestParameters: kc.cfg.RequestParameters,
 	}
 
 	resp, err := ec.PostWithSignature(u, ar.CK, reqBody)
@@ -123,11 +125,13 @@ func (o *OperationBootstrapInventoryDevice) Perform(kc *Client) error {
 	}
 
 	reqBody := struct {
-		KeyID    string `json:"keyId"`
-		Endpoint string `json:"endpoint"`
+		KeyID             string `json:"keyId"`
+		Endpoint          string `json:"endpoint"`
+		RequestParameters string `json:"requestParameters,omitempty"`
 	}{
-		KeyID:    ar.KeyID,
-		Endpoint: endpoint,
+		KeyID:             ar.KeyID,
+		Endpoint:          endpoint,
+		RequestParameters: kc.cfg.RequestParameters,
 	}
 
 	resp, err := ec.PostWithSignature(u, ar.CK, reqBody)
@@ -302,9 +306,11 @@ func simpleOperation(kc *Client, path string) error {
 	}
 
 	reqBody := struct {
-		KeyID string `json:"keyId"`
+		KeyID             string `json:"keyId"`
+		RequestParameters string `json:"requestParameters,omitempty"`
 	}{
-		KeyID: ar.KeyID,
+		KeyID:             ar.KeyID,
+		RequestParameters: kc.cfg.RequestParameters,
 	}
 
 	resp, err := ec.PostWithSignature(u, ar.CK, reqBody)
