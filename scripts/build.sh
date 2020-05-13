@@ -29,10 +29,6 @@ check_command_available() {
   check_command_available go
   check_command_available git
   check_command_available docker
-
-  command -v dep > /dev/null 2>&1 || {
-    go get -u github.com/golang/dep/cmd/dep
-  }
 }
 
 set -e # aborting if any commands below exit with non-zero code
@@ -45,13 +41,6 @@ fi
 
 # https://github.com/niemeyer/gopkg/issues/50
 git config --global http.https://gopkg.in.followRedirects true
-
-: "Install dependencies" && {
-  echo "Installing build dependencies ..."
-
-  echo "Installing runtime dependencies ..."
-  cd "$d" && dep ensure -update; cd -
-}
 
 function build_for_windows() {
   for arch in amd64 386; do
@@ -79,9 +68,8 @@ function build_for_linux() {
   tdh="$d/cmd/$exe/$tdc" # output directory on host
   container=krypton-cli-build
   docker build -t $container "$d/scripts"
-  docker run -it --rm -v="$GOPATH:/go" $container sh -c \
-    "cd /go/src/github.com/soracom/krypton-client-go/cmd/krypton-cli && \
-    GOOS=linux GOARCH=$arch go build -o $tdc/$exe -ldflags='-X main.Version=$VERSION'"
+  docker run -it --rm -v "$d:/src" -v "$GOPATH:/go" -u "$(id -u):$(id -g)" $container sh -c \
+    "cd /src/cmd/krypton-cli && GOOS=linux GOARCH=$arch go build -o $tdc/$exe -ldflags='-X main.Version=$VERSION'"
   cd "$tdh" && tar czvf "$dist/$VERSION/${exe}_${VERSION}_linux_${arch}.tar.gz" -- *; cd -
   rm -rf "$tdh"
 }
