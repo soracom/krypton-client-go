@@ -67,9 +67,11 @@ func (o *OperationBootstrapAWSIoTThing) Perform(kc *Client) error {
 	}
 
 	var rp map[string]interface{}
-	err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
-	if err != nil {
-		return err
+	if kc.cfg.RequestParameters != "" {
+		err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
+		if err != nil {
+			return err
+		}
 	}
 
 	reqBody := struct {
@@ -131,9 +133,11 @@ func (o *OperationBootstrapInventoryDevice) Perform(kc *Client) error {
 	}
 
 	var rp map[string]interface{}
-	err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
-	if err != nil {
-		return err
+	if kc.cfg.RequestParameters != "" {
+		err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
+		if err != nil {
+			return err
+		}
 	}
 
 	reqBody := struct {
@@ -318,9 +322,11 @@ func simpleOperation(kc *Client, path string) error {
 	}
 
 	var rp map[string]interface{}
-	err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
-	if err != nil {
-		return err
+	if kc.cfg.RequestParameters != "" {
+		err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
+		if err != nil {
+			return err
+		}
 	}
 
 	reqBody := struct {
