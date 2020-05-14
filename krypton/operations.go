@@ -66,12 +66,18 @@ func (o *OperationBootstrapAWSIoTThing) Perform(kc *Client) error {
 		return err
 	}
 
+	var rp map[string]interface{}
+	err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
+	if err != nil {
+		return err
+	}
+
 	reqBody := struct {
-		KeyID             string `json:"keyId"`
-		RequestParameters string `json:"requestParameters,omitempty"`
+		KeyID             string                 `json:"keyId"`
+		RequestParameters map[string]interface{} `json:"requestParameters,omitempty"`
 	}{
 		KeyID:             ar.KeyID,
-		RequestParameters: kc.cfg.RequestParameters,
+		RequestParameters: rp,
 	}
 
 	resp, err := ec.PostWithSignature(u, ar.CK, reqBody)
@@ -124,14 +130,20 @@ func (o *OperationBootstrapInventoryDevice) Perform(kc *Client) error {
 		return errors.New("endpoint must be a string")
 	}
 
+	var rp map[string]interface{}
+	err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
+	if err != nil {
+		return err
+	}
+
 	reqBody := struct {
-		KeyID             string `json:"keyId"`
-		Endpoint          string `json:"endpoint"`
-		RequestParameters string `json:"requestParameters,omitempty"`
+		KeyID             string                 `json:"keyId"`
+		Endpoint          string                 `json:"endpoint"`
+		RequestParameters map[string]interface{} `json:"requestParameters,omitempty"`
 	}{
 		KeyID:             ar.KeyID,
 		Endpoint:          endpoint,
-		RequestParameters: kc.cfg.RequestParameters,
+		RequestParameters: rp,
 	}
 
 	resp, err := ec.PostWithSignature(u, ar.CK, reqBody)
@@ -305,12 +317,18 @@ func simpleOperation(kc *Client, path string) error {
 		return err
 	}
 
+	var rp map[string]interface{}
+	err = json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
+	if err != nil {
+		return err
+	}
+
 	reqBody := struct {
-		KeyID             string `json:"keyId"`
-		RequestParameters string `json:"requestParameters,omitempty"`
+		KeyID             string                 `json:"keyId"`
+		RequestParameters map[string]interface{} `json:"requestParameters,omitempty"`
 	}{
 		KeyID:             ar.KeyID,
-		RequestParameters: kc.cfg.RequestParameters,
+		RequestParameters: rp,
 	}
 
 	resp, err := ec.PostWithSignature(u, ar.CK, reqBody)
