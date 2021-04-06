@@ -1,4 +1,4 @@
-FROM golang:1.14-stretch
+FROM golang:latest
 
 RUN apt update -y && \
     apt install -y pcscd libpcsclite1 libpcsclite-dev
