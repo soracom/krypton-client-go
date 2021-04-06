@@ -15,6 +15,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	inventoryApplicationKeyLength = 16
+)
+
 var operations map[string]Operation
 
 func init() {
@@ -246,7 +250,7 @@ func calculateInventoryApplicationKey(nonce []byte, timestampMillis string, ck [
 	h.Write(ck)
 	b := h.Sum(nil)
 
-	return b[0:sha256.Size]
+	return b[0:inventoryApplicationKeyLength]
 }
 
 type OperationGenerateAmazonCognitoOpenIDToken struct {
