@@ -25,6 +25,7 @@ func init() {
 	operations = make(map[string]Operation)
 
 	ops := []Operation{
+		&OperationBootstrapArc{},
 		&OperationBootstrapAWSIoTThing{},
 		&OperationBootstrapInventoryDevice{},
 		&OperationGenerateAmazonCognitoOpenIDToken{},
@@ -41,6 +42,21 @@ type Operation interface {
 	GetName() string
 	GetHelpText() string
 	Perform(*Client) error
+}
+
+type OperationBootstrapArc struct {
+}
+
+func (o *OperationBootstrapArc) GetName() string {
+	return "bootstrapArc"
+}
+
+func (o *OperationBootstrapArc) GetHelpText() string {
+	return "perform bootstrap a SORACOM Arc virtual SIM"
+}
+
+func (o *OperationBootstrapArc) Perform(kc *Client) error {
+	return simpleOperation(kc, "/v1/provisioning/soracom/arc/bootstrap")
 }
 
 type OperationBootstrapAWSIoTThing struct {
