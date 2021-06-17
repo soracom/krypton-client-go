@@ -1,0 +1,10 @@
+FROM 903921708000.dkr.ecr.ap-northeast-1.amazonaws.com/raspios-lite-armv7l-runs-on-x86-64:latest
+
+ADD go1.16.5.linux-armv6l.tar.gz /usr/local
+
+RUN apt update -y && \
+    apt install -y pcscd libpcsclite1 libpcsclite-dev
+
+ENV PATH=$PATH:/usr/local/go/bin
+ENV GOPATH=/go
+ENV GOCACHE=/src/.cache
