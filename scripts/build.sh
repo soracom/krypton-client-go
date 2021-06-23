@@ -25,7 +25,7 @@ cleanup() {
   echo "Deleted temporary working directory: '$tmpdir'"
 }
 
-mkdir "$d/.cache"
+mkdir -p "$d/.cache"
 
 : "Check if shell scripts are healthy" && {
   command -v shellcheck > /dev/null 2>&1 && {
