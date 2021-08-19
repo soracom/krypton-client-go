@@ -62,7 +62,7 @@ build_for_windows() {
 
 build_for_mac() {
   if [[ "$( uname -s )" != "Darwin" ]]; then
-    echo "Building an executable for Mac can be don only on Mac"
+    echo "Building an executable for Mac can be done only on Mac"
     return
   fi
   echo "Building for macOS ..."
