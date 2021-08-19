@@ -94,12 +94,13 @@ func parseFlags() (runMode, *appConfig, *endorse.Config, *krypton.Config, error)
 		keysAPIEndpointURL         string
 		signatureAlgorithm         string
 
-		uiccInterfaceType string
-		portName          string
-		baudRate          uint
-		dataBits          uint
-		stopBits          uint
-		parityMode        uint
+		uiccInterfaceType     string
+		portName              string
+		baudRate              uint
+		dataBits              uint
+		stopBits              uint
+		parityMode            uint
+		interCharacterTimeout uint
 
 		listCOMPorts bool
 		deviceInfo   bool
@@ -125,6 +126,7 @@ func parseFlags() (runMode, *appConfig, *endorse.Config, *krypton.Config, error)
 	flag.UintVar(&dataBits, "data-bits", 8, "Data bits for communication device (e.g. -s 8)")
 	flag.UintVar(&stopBits, "stop-bits", 1, "Stop bits for communication device (e.g. -s 1)")
 	flag.UintVar(&parityMode, "parity-mode", 0, "Parity mode for communication device. 0: None, 1: Odd, 2: Even")
+	flag.UintVar(&interCharacterTimeout, "inter-character-timeout", 100, "Timeout in milliseconds between each incoming character")
 
 	flag.BoolVar(&listCOMPorts, "list-com-ports", false, "List all available communication devices and exit")
 	flag.BoolVar(&deviceInfo, "device-info", false, "Query the communication device and print the information")
@@ -169,11 +171,12 @@ func parseFlags() (runMode, *appConfig, *endorse.Config, *krypton.Config, error)
 	}
 
 	serial := endorse.SerialConfig{
-		PortName:   portName,
-		BaudRate:   baudRate,
-		DataBits:   dataBits,
-		StopBits:   stopBits,
-		ParityMode: endorse.ParityMode(parityMode),
+		PortName:              portName,
+		BaudRate:              baudRate,
+		DataBits:              dataBits,
+		StopBits:              stopBits,
+		ParityMode:            endorse.ParityMode(parityMode),
+		InterCharacterTimeout: interCharacterTimeout,
 	}
 
 	eCfg := &endorse.Config{
