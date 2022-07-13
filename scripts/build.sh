@@ -61,13 +61,17 @@ build_for_windows() {
 }
 
 build_for_mac() {
-  if [[ "$( uname -s )" != "Darwin" ]]; then
+  if [ "$( uname -s )" != "Darwin" ]; then
     echo "Building an executable for Mac can be done only on Mac"
     return
   fi
   echo "Building for macOS ..."
 
-  arch=$1
+  arch=arm64
+  if [ "$( uname -m )" == "x86_64" ]; then
+    arch=amd64
+  fi
+
   td="$tmpdir/$VERSION/${exe}_${VERSION}_darwin_${arch}"
   GOOS=darwin GOARCH=$arch go build -o "$td/${exe}" -ldflags="-X main.Version=$VERSION"
   cd "$td" && zip -r "$dist/$VERSION/${exe}_${VERSION}_darwin_${arch}.zip" "$exe"; cd -
@@ -75,6 +79,11 @@ build_for_mac() {
 }
 
 build_for_linux() {
+  if [ "$( uname -s )" != "Linux" ]; then
+    echo "Building an executable for Linux can be done only on Linux"
+    return
+  fi
+
   arch=$1
   echo "Building for Linux ($arch)..."
 
@@ -87,6 +96,11 @@ build_for_linux() {
 }
 
 build_for_raspberry_pi() {
+  if [ "$( uname -s )" != "Linux" ]; then
+    echo "Building an executable for Raspberry Pi can be done only on Linux"
+    return
+  fi
+
   arch=$1
   echo "Building for Raspberry Pi ($arch)..."
 
@@ -99,8 +113,10 @@ build_for_raspberry_pi() {
   cd "$tdh" && tar czvf "$dist/$VERSION/${exe}_${VERSION}_linux_${arch}.tar.gz" -- *; cd -
 }
 
-progress "logging in to AWS ECR ..."
-aws ecr get-login-password --profile "$AWS_PROFILE" --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ecr_endpoint"
+if [ "$( uname -s )" == "Linux" ]; then
+  progress "logging in to AWS ECR ..."
+  aws ecr get-login-password --profile "$AWS_PROFILE" --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ecr_endpoint"
+fi
 
 progress "Build krypton-cli executables"
 pushd "$d/cmd/krypton-cli" > /dev/null
@@ -109,7 +125,7 @@ rm -rf "$d/cmd/krypton-cli/dist/"
 mkdir -p "$tmpdir/$VERSION"
 mkdir -p "$dist/$VERSION"
 
-build_for_mac amd64
+build_for_mac
 build_for_linux amd64
 build_for_raspberry_pi arm
 build_for_windows
