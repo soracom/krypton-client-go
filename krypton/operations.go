@@ -27,6 +27,7 @@ func init() {
 	ops := []Operation{
 		&OperationBootstrapArc{},
 		&OperationBootstrapAWSIoTThing{},
+		&OperationBootstrapAzureIoT{},
 		&OperationBootstrapInventoryDevice{},
 		&OperationGenerateAmazonCognitoOpenIDToken{},
 		&OperationGenerateAmazonCognitoSessionCredentials{},
@@ -118,6 +119,21 @@ func (o *OperationBootstrapAWSIoTThing) Perform(kc *Client) error {
 	fmt.Println(string(respBodyBytes))
 
 	return nil
+}
+
+type OperationBootstrapAzureIoT struct {
+}
+
+func (o *OperationBootstrapAzureIoT) GetName() string {
+	return "bootstrapAzureIoT"
+}
+
+func (o *OperationBootstrapAzureIoT) GetHelpText() string {
+	return "perform bootstrap as an Azure IoT device"
+}
+
+func (o *OperationBootstrapAzureIoT) Perform(kc *Client) error {
+	return simpleOperation(kc, "/v1/provisioning/azure/iot/bootstrap")
 }
 
 type OperationBootstrapInventoryDevice struct {
