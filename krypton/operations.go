@@ -27,7 +27,8 @@ func init() {
 	ops := []Operation{
 		&OperationBootstrapArc{},
 		&OperationBootstrapAWSIoTThing{},
-		&OperationBootstrapAzureIoT{},
+		&OperationRegisterAzureIoTDevice{},
+		&OperationGetAzureIoTDeviceRegistrationStatus{},
 		&OperationBootstrapInventoryDevice{},
 		&OperationGenerateAmazonCognitoOpenIDToken{},
 		&OperationGenerateAmazonCognitoSessionCredentials{},
@@ -121,19 +122,93 @@ func (o *OperationBootstrapAWSIoTThing) Perform(kc *Client) error {
 	return nil
 }
 
-type OperationBootstrapAzureIoT struct {
+type OperationRegisterAzureIoTDevice struct {
 }
 
-func (o *OperationBootstrapAzureIoT) GetName() string {
-	return "bootstrapAzureIoT"
+func (o *OperationRegisterAzureIoTDevice) GetName() string {
+	return "registerAzureIotDevice"
 }
 
-func (o *OperationBootstrapAzureIoT) GetHelpText() string {
-	return "perform bootstrap as an Azure IoT device"
+func (o *OperationRegisterAzureIoTDevice) GetHelpText() string {
+	return "register as an Azure IoT device"
 }
 
-func (o *OperationBootstrapAzureIoT) Perform(kc *Client) error {
-	return simpleOperation(kc, "/v1/provisioning/azure/iot/bootstrap")
+func (o *OperationRegisterAzureIoTDevice) Perform(kc *Client) error {
+	return simpleOperation(kc, "/v1/provisioning/azure/iot/register")
+
+}
+
+type OperationGetAzureIoTDeviceRegistrationStatus struct {
+}
+
+func (o *OperationGetAzureIoTDeviceRegistrationStatus) GetName() string {
+	return "getAzureIotDeviceRegistrationStatus"
+}
+
+func (o *OperationGetAzureIoTDeviceRegistrationStatus) GetHelpText() string {
+	return "get registration status of Azure IoT device"
+}
+
+type GetAzureIoTDeviceRegistrationStatusRequestParameters struct {
+	OperationID string `json:"operationId"`
+}
+
+func (o *OperationGetAzureIoTDeviceRegistrationStatus) Perform(kc *Client) error {
+	log("performing getAzureIoTDeviceRegistrationStatus")
+	var rp map[string]interface{}
+	if kc.cfg.RequestParameters != "" {
+		err := json.Unmarshal([]byte(kc.cfg.RequestParameters), &rp)
+		if err != nil {
+			return err
+		}
+	}
+
+	operationID := rp["operationId"]
+	if operationID == "" {
+		return errors.New("mandatory request parameter 'operationId' is not specified")
+	}
+
+	ec := kc.cfg.EndorseClient
+
+	log("performing authentication")
+	ar, err := ec.DoAuthentication()
+	if err != nil {
+		return err
+	}
+
+	u, err := url.Parse(fmt.Sprintf("%s%s%s", strings.TrimSuffix(kc.cfg.ProvisioningAPIEndpointURL.String(), "/"), "/v1/provisioning/azure/iot/registrations/", operationID))
+	if err != nil {
+		return err
+	}
+
+	reqBody := struct {
+		KeyID             string                 `json:"keyId"`
+		RequestParameters map[string]interface{} `json:"requestParameters,omitempty"`
+	}{
+		KeyID:             ar.KeyID,
+		RequestParameters: rp,
+	}
+
+	resp, err := ec.PostWithSignature(u, ar.CK, reqBody)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode > http.StatusBadRequest {
+		return errors.Errorf("unsuccessful response: %s\n%s", resp.Status, string(respBodyBytes))
+	}
+
+	log("received response: %s", string(respBodyBytes))
+
+	fmt.Println(string(respBodyBytes))
+
+	return nil
 }
 
 type OperationBootstrapInventoryDevice struct {
@@ -367,7 +442,7 @@ func simpleOperation(kc *Client, path string) error {
 
 	reqBody := struct {
 		KeyID             string                 `json:"keyId"`
-		RequestParameters map[string]interface{} `json:"requestParameters,omitempty"`
+		RequestParameters map[string]interface{} `json:"requestParameters"`
 	}{
 		KeyID:             ar.KeyID,
 		RequestParameters: rp,
@@ -379,13 +454,13 @@ func simpleOperation(kc *Client, path string) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode > http.StatusBadRequest {
-		return errors.Errorf("unsuccessful response: %s", resp.Status)
-	}
-
 	respBodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode > http.StatusBadRequest {
+		return errors.Errorf("unsuccessful response: %s\n%s", resp.Status, string(respBodyBytes))
 	}
 
 	fmt.Println(string(respBodyBytes))
@@ -417,9 +492,9 @@ func GenerateOperationsHelpText() string {
 	s := strings.Join(formattedLines, "\n")
 
 	/*
-		contet of `s`` should be like:
+		content of `s` should be like:
 
-		getSubscirberMetadata                     gets subscriber's metadata
+		getSubscriberMetadata                     gets subscriber's metadata
 		getUserData                               gets 'userdata' from group configuration
 		bootstrapAwsIotThings                     perform bootstrap for AWS IoT Things
 		bootstrapInventoryDevice                  perform bootstrap as a SORACOM Inventory device
