@@ -35,6 +35,11 @@ curl -L -o "$d/scripts/$go_package_arm32" "https://golang.org/dl/${go_package_ar
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 docker build -t "${container_name}:${timestamp}" -f "$d/scripts/Dockerfile-raspi" "$d/scripts"
 
+progress "pushing the image to the registry ..."
+docker tag "${container_name}:${timestamp}" "${ecr_endpoint}/${container_name}:${timestamp}"
+docker tag "${container_name}:${timestamp}" "${ecr_endpoint}/${container_name}:latest"
+docker push "${ecr_endpoint}/${container_name}"
+
 progress "build image for linux aarch64 (for Raspberry Pi 64bit)"
 container_name=krypton-cli-build-raspi64
 curl -L -o "$d/scripts/$go_package_arm64" "https://golang.org/dl/${go_package_arm64}"  # downloading the huge file in raspi container is way slow, so downloading it here instead.
