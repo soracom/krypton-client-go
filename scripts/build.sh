@@ -92,8 +92,12 @@ build_for_linux() {
   tdc="dist/$VERSION/${exe}_${VERSION}_linux_${arch}" # output directory in container
   tdh="$d/cmd/$exe/$tdc" # output directory on host
   container="${ecr_endpoint}/krypton-cli-build:latest"
-  docker run -it --rm -v "$d:/src" -v "$gopath_cache_host:/go" -u "$(id -u):$(id -g)" "$container" sh -c \
-    "cd /src/cmd/krypton-cli && GOOS=linux GOARCH=$arch go build -o $tdc/$exe -ldflags='-X main.Version=$VERSION'"
+  docker run -it --rm \
+    -v "$d:/src" \
+    -v "$gopath_cache_host:/go" \
+    -u "$(id -u):$(id -g)" \
+    "$container" \
+    sh -c "cd /src/cmd/krypton-cli && GOOS=linux GOARCH=$arch go build -o $tdc/$exe -ldflags='-X main.Version=$VERSION'"
   cd "$tdh" && tar czvf "$dist/$VERSION/${exe}_${VERSION}_linux_${arch}.tar.gz" -- *; cd -
 }
 
@@ -122,8 +126,12 @@ build_for_raspberry_pi() {
       ;;
   esac
   docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-  docker run -it --rm -v "$d:/src" -v "$gopath_cache_rpi_host:/go" -u "$(id -u):$(id -g)" "$container" sh -c \
-    "cd /src/cmd/krypton-cli && GOOS=linux GOARCH=$arch go build -o $tdc/$exe -ldflags='-X main.Version=$VERSION'"
+  docker run -it --rm \
+    -v "$d:/src" \
+    -v "$gopath_cache_rpi_host:/go" \
+    -u "$(id -u):$(id -g)" \
+    "$container" \
+    sh -c "cd /src/cmd/krypton-cli && GOOS=linux GOARCH=$arch go build -o $tdc/$exe -ldflags='-X main.Version=$VERSION'"
   cd "$tdh" && tar czvf "$dist/$VERSION/${exe}_${VERSION}_linux_${arch}.tar.gz" -- *; cd -
 }
 
