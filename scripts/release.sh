@@ -9,7 +9,7 @@ if [ -z "$1" ]; then
 fi
 
 pushd "$d/cmd/krypton-cli" >/dev/null 2>&1
-ghr --prerelease --replace -u soracom -r krypton-client-go "v$VERSION" "$d/cmd/krypton-cli/dist/$VERSION/"
+ghr -prerelease -replace -recreate -u soracom -r krypton-client-go "v$VERSION" "$d/cmd/krypton-cli/dist/$VERSION/"
 popd >/dev/null 2>&1
 
 #echo

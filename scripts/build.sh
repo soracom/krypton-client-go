@@ -44,7 +44,9 @@ check_command_available() {
 : "Check if required commands for build are available" && {
   check_command_available go
   check_command_available git
-  check_command_available docker
+  if [ "$( uname -s )" == "Linux" ]; then
+    check_command_available docker
+  fi
 }
 
 set -e # aborting if any commands below exit with non-zero code
@@ -106,7 +108,19 @@ build_for_raspberry_pi() {
 
   tdc="dist/$VERSION/${exe}_${VERSION}_linux_${arch}" # output directory in container
   tdh="$d/cmd/$exe/$tdc" # output directory on host
-  container="${ecr_endpoint}/krypton-cli-build-raspi:latest"
+
+  case "$arch" in
+    "arm")
+      container="${ecr_endpoint}/krypton-cli-build-raspi:latest"
+      ;;
+    "arm64")
+      container="${ecr_endpoint}/krypton-cli-build-raspi64:latest"
+      ;;
+    *)
+      echo "unknown arch for raspi: $arch"
+      exit 1
+      ;;
+  esac
   docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
   docker run -it --rm -v "$d:/src" -v "$gopath_cache_rpi_host:/go" -u "$(id -u):$(id -g)" "$container" sh -c \
     "cd /src/cmd/krypton-cli && GOOS=linux GOARCH=$arch go build -o $tdc/$exe -ldflags='-X main.Version=$VERSION'"
@@ -128,6 +142,7 @@ mkdir -p "$dist/$VERSION"
 build_for_mac
 build_for_linux amd64
 build_for_raspberry_pi arm
+build_for_raspberry_pi arm64
 build_for_windows
 
 popd > /dev/null

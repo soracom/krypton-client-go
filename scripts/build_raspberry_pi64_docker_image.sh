@@ -15,12 +15,13 @@ tmpdir="$( mktemp -d )"
 sector_size=512
 start_sector=532480
 ecr_endpoint="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-mount_point="/mnt/raspios_lite_armhf"
-image_archive_file="2021-05-07-raspios-buster-armhf-lite.zip"
+mount_point="/mnt/raspios_arm64"
+image_archive_file="2022-09-22-raspios-bullseye-arm64-lite.img.xz"
 image_work_dir="$tmpdir/image_work"
-image_path="raspios_lite_armhf/images/raspios_lite_armhf-2021-05-28/${image_archive_file}"
-image_file="${image_archive_file/.zip/.img}"
-container_name=raspios-lite-armv7l-runs-on-x86-64
+image_path="raspios_lite_arm64/images/raspios_lite_arm64-2022-09-26/${image_archive_file}"
+image_file="${image_archive_file/.xz/}"
+container_name=raspios-lite-arm64-runs-on-x86-64
+
 
 trap cleanup EXIT
 cleanup() {
@@ -44,7 +45,7 @@ mkdir -p "$image_work_dir"
 curl -L -o "$image_work_dir/$image_archive_file" "https://downloads.raspberrypi.org/$image_path"
 
 progress "extracting image file from the archive ..."
-(cd "$image_work_dir" && unzip "$image_archive_file" && ls)
+(cd "$image_work_dir" && unxz "$image_archive_file" && ls)
 
 echo
 fdisk -l "$image_work_dir/$image_file"
@@ -66,8 +67,8 @@ echo "Info: we need root access to mount the image"
 sudo mkdir -p "$mount_point"
 sudo mount -o loop,offset=$((sector_size * start_sector)) "$image_work_dir/$image_file" "$mount_point"
 
-progress "disabling preloaded shared libraries to get everything including networking to work on x86_64 ..."
-sudo mv "$mount_point/etc/ld.so.preload" "$mount_point/etc/ld.so.preload.bak"
+#progress "disabling preloaded shared libraries to get everything including networking to work on x86_64 ..."
+#sudo mv "$mount_point/etc/ld.so.preload" "$mount_point/etc/ld.so.preload.bak"
 
 progress "packaging ..."
 sudo tar -C "$mount_point" -cf "$tmpdir/docker-image-${timestamp}-raspios-lite.tar" .
@@ -78,8 +79,8 @@ docker import "$tmpdir/docker-image-${timestamp}-raspios-lite.tar" "${container_
 progress "testing the image ..."
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 arch="$( docker run --rm -it "${container_name}:${timestamp}" uname -m | tr -d '\r\n' )"
-if [[ "$arch" != "armv7l" ]]; then
-  echo "expected armv7l but got '$arch'"
+if [[ "$arch" != "aarch64" ]]; then
+  echo "expected aarch64 but got '$arch'"
   exit 1
 fi
 

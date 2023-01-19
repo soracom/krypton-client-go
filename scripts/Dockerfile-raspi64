@@ -1,6 +1,6 @@
-FROM 903921708000.dkr.ecr.ap-northeast-1.amazonaws.com/raspios-lite-armv7l-runs-on-x86-64:latest
+FROM 903921708000.dkr.ecr.ap-northeast-1.amazonaws.com/raspios-lite-arm64-runs-on-x86-64:latest
 
-ADD go1.19.5.linux-armv6l.tar.gz /usr/local
+ADD go1.19.5.linux-arm64.tar.gz /usr/local
 
 RUN apt update -y && \
     apt install -y pcscd libpcsclite1 libpcsclite-dev
